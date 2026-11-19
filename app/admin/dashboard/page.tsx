@@ -453,7 +453,7 @@ export default function AdminDashboardPage() {
 												<Button
 													size="sm"
 													variant="destructive"
-													onClick={() => removeItem(section.key, item._id)}
+													onClick={() => item._id && removeItem(section.key, item._id)}
 												>
 													<Trash2 className="h-4 w-4 mr-1" />
 													Delete
