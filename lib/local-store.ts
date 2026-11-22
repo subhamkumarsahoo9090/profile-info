@@ -9,9 +9,11 @@ import {
 	seedCertificates,
 	seedBlogPosts,
 } from '@/lib/seed-data';
+import { defaultResume } from '@/lib/resume-defaults';
 
 export type StoreShape = {
 	profile: Record<string, unknown>;
+	resume: Record<string, unknown>;
 	projects: Record<string, unknown>[];
 	experiences: Record<string, unknown>[];
 	education: Record<string, unknown>[];
@@ -33,6 +35,7 @@ function withIds<T extends Record<string, unknown>>(items: T[], prefix: string) 
 function defaultStore(): StoreShape {
 	return {
 		profile: { ...seedProfile, _id: 'profile_1' },
+		resume: { ...defaultResume, _id: 'resume_1' },
 		projects: withIds(seedProjects as Record<string, unknown>[], 'project'),
 		experiences: withIds(seedExperiences as Record<string, unknown>[], 'exp'),
 		education: withIds(seedEducation as Record<string, unknown>[], 'edu'),
@@ -54,7 +57,12 @@ async function ensureFile() {
 export async function readStore(): Promise<StoreShape> {
 	await ensureFile();
 	const raw = await fs.readFile(DATA_FILE, 'utf8');
-	return JSON.parse(raw) as StoreShape;
+	const parsed = JSON.parse(raw) as StoreShape;
+	if (!parsed.resume) {
+		parsed.resume = { ...defaultResume, _id: 'resume_1' };
+		await writeStore(parsed);
+	}
+	return parsed;
 }
 
 export async function writeStore(store: StoreShape) {
@@ -62,7 +70,9 @@ export async function writeStore(store: StoreShape) {
 	await fs.writeFile(DATA_FILE, JSON.stringify(store, null, 2), 'utf8');
 }
 
-export async function listLocal(collection: keyof Omit<StoreShape, 'profile'>) {
+export async function listLocal(
+	collection: keyof Omit<StoreShape, 'profile' | 'resume'>
+) {
 	const store = await readStore();
 	return store[collection] || [];
 }
@@ -79,8 +89,29 @@ export async function saveLocalProfile(profile: Record<string, unknown>) {
 	return store.profile;
 }
 
+export async function getLocalResume() {
+	const store = await readStore();
+	if (!store.resume) {
+		store.resume = { ...defaultResume, _id: 'resume_1' };
+		await writeStore(store);
+	}
+	return store.resume;
+}
+
+export async function saveLocalResume(resume: Record<string, unknown>) {
+	const store = await readStore();
+	store.resume = {
+		...defaultResume,
+		...store.resume,
+		...resume,
+		_id: store.resume?._id || 'resume_1',
+	};
+	await writeStore(store);
+	return store.resume;
+}
+
 export async function createLocal(
-	collection: keyof Omit<StoreShape, 'profile'>,
+	collection: keyof Omit<StoreShape, 'profile' | 'resume'>,
 	item: Record<string, unknown>
 ) {
 	const store = await readStore();
@@ -94,7 +125,7 @@ export async function createLocal(
 }
 
 export async function updateLocal(
-	collection: keyof Omit<StoreShape, 'profile'>,
+	collection: keyof Omit<StoreShape, 'profile' | 'resume'>,
 	id: string,
 	item: Record<string, unknown>
 ) {
@@ -109,7 +140,7 @@ export async function updateLocal(
 }
 
 export async function deleteLocal(
-	collection: keyof Omit<StoreShape, 'profile'>,
+	collection: keyof Omit<StoreShape, 'profile' | 'resume'>,
 	id: string
 ) {
 	const store = await readStore();

@@ -18,6 +18,9 @@
 # misc
 .DS_Store
 *.pem
+.node-localstorage
+
+# Node 25+ webstorage file used by npm scripts
 
 # debug
 npm-debug.log*

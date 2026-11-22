@@ -6,13 +6,16 @@ import { Skill } from '@/models/Skill';
 import { Certificate } from '@/models/Certificate';
 import { BlogPost } from '@/models/BlogPost';
 import { Profile } from '@/models/Profile';
+import { Resume } from '@/models/Resume';
 import {
 	createLocal,
 	deleteLocal,
 	getLocalProfile,
+	getLocalResume,
 	listLocal,
 	resetLocalStore,
 	saveLocalProfile,
+	saveLocalResume,
 	updateLocal,
 } from '@/lib/local-store';
 import {
@@ -24,6 +27,7 @@ import {
 	seedCertificates,
 	seedBlogPosts,
 } from '@/lib/seed-data';
+import { defaultResume } from '@/lib/resume-defaults';
 
 type Collection = 'projects' | 'experiences' | 'education' | 'skills' | 'certificates' | 'blogs';
 
@@ -169,12 +173,48 @@ export async function saveProfile(body: Record<string, unknown>) {
 	return saveLocalProfile(body);
 }
 
+export async function getResume() {
+	if (await mongoAvailable()) {
+		try {
+			let resume = await Resume.findOne();
+			if (!resume) {
+				resume = await Resume.create(defaultResume);
+			}
+			return resume.toObject();
+		} catch (error) {
+			console.error('mongo resume failed, using local store', error);
+			mongoState = { ok: false, checkedAt: Date.now() };
+		}
+	}
+	return getLocalResume();
+}
+
+export async function saveResume(body: Record<string, unknown>) {
+	if (await mongoAvailable()) {
+		try {
+			let resume = await Resume.findOne();
+			if (!resume) {
+				resume = await Resume.create(body);
+			} else {
+				Object.assign(resume, body);
+				await resume.save();
+			}
+			return resume.toObject();
+		} catch (error) {
+			console.error('mongo resume save failed, using local store', error);
+			mongoState = { ok: false, checkedAt: Date.now() };
+		}
+	}
+	return saveLocalResume(body);
+}
+
 export async function reseedAll() {
 	const local = await resetLocalStore();
 	if (await mongoAvailable()) {
 		try {
 			await Promise.all([
 				Profile.deleteMany({}),
+				Resume.deleteMany({}),
 				Project.deleteMany({}),
 				Experience.deleteMany({}),
 				Education.deleteMany({}),
@@ -183,6 +223,7 @@ export async function reseedAll() {
 				BlogPost.deleteMany({}),
 			]);
 			await Profile.create(seedProfile);
+			await Resume.create(defaultResume);
 			await Promise.all([
 				Project.insertMany(seedProjects),
 				Experience.insertMany(seedExperiences),

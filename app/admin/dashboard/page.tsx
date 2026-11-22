@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut, Plus, Pencil, Trash2, RefreshCw, Save } from 'lucide-react';
+import { FileText, LogOut, Plus, Pencil, Trash2, RefreshCw, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -303,6 +303,12 @@ export default function AdminDashboardPage() {
 						<h1 className="text-lg font-semibold">Admin Dashboard</h1>
 					</div>
 					<div className="flex items-center gap-2">
+						<Button size="sm" asChild>
+							<Link href="/admin/resume">
+								<FileText className="h-4 w-4 mr-2" />
+								Resume Builder
+							</Link>
+						</Button>
 						<Button variant="outline" size="sm" onClick={loadAll}>
 							<RefreshCw className="h-4 w-4 mr-2" />
 							Refresh
