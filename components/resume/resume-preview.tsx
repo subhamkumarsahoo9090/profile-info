@@ -1,6 +1,6 @@
 'use client';
 
-import type { RefObject } from 'react';
+import type { Ref } from 'react';
 import type { ResumeData } from '@/types/resume';
 import { ClassicTemplate } from '@/components/resume/templates/classic-template';
 import { ModernTemplate } from '@/components/resume/templates/modern-template';
@@ -11,7 +11,7 @@ export function ResumePreview({
 	previewRef,
 }: {
 	data: ResumeData;
-	previewRef?: RefObject<HTMLDivElement | null>;
+	previewRef?: Ref<HTMLDivElement>;
 }) {
 	return (
 		<div
@@ -20,8 +20,10 @@ export function ResumePreview({
 			className="bg-white text-black shadow-2xl mx-auto overflow-hidden"
 			style={{
 				width: '794px',
+				height: '1123px',
 				minHeight: '1123px',
-				padding: data.template === 'modern' || data.template === 'executive' ? 0 : '40px 48px',
+				maxHeight: '1123px',
+				padding: data.template === 'modern' || data.template === 'executive' ? 0 : '36px 44px',
 			}}
 		>
 			{data.template === 'classic' && <ClassicTemplate data={data} />}

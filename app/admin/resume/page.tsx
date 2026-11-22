@@ -90,13 +90,16 @@ export default function AdminResumePage() {
 		setDownloading(true);
 		try {
 			const safeName = (data.name || 'resume').replace(/\s+/g, '-').toLowerCase();
-			await downloadResumePdf(
+			const result = await downloadResumePdf(
 				previewRef.current,
 				`${safeName}-${data.template}.pdf`
 			);
-			toast.success('PDF downloaded');
-		} catch {
-			toast.error('PDF download failed');
+			const sizeMb = (result.bytes / (1024 * 1024)).toFixed(2);
+			toast.success(`1-page PDF downloaded (${sizeMb} MB / max 2 MB)`);
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : 'PDF download failed (must be under 2 MB)'
+			);
 		} finally {
 			setDownloading(false);
 		}
